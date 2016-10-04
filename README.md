@@ -180,6 +180,14 @@ server is running in parallel with the application unit code.
 We are performing three types of test cases here so far.
 
 ####Case-1:
+In this case, we are running two separate apps, one for the test and other for the stress. We start both the apps and start increasing the stress by increasing the number of threads by '5' after every 2 seconds. The number of stress clients is under user's control. We either launch reader app or writer app for test which constantly sends read requests towards zookeeper. The high level view of this case is given below;
+
+![hZookeeper Case-2](./images/case_2.png)
+
+After the desired amount of stress threads have been launched, test client is stopped and it's stats are fetched. These stats are stored in influxdb which can be visualized on Grafana later.
+In this case, we can visualize how different stress influences the latencies of read/write requests.
+
+####Case-2:
 In the first case, we are running different zookeeper operations and observing their affects on eachother.
 
 We are running number of clients specified
@@ -218,14 +226,6 @@ These stats can be fetched when the *getstats* signal is received from
 HAnalyzer. The high level view is shown below;
 
 ![hZookeeper Case-1](./images/case_1.png)
-
-####Case-2:
-In this case, we are running two separate apps, one for the test and other for the stress. We start both the apps and start increasing the stress by increasing the number of threads by '5' after every 2 seconds. The number of stress clients is under user's control. We either launch reader app or writer app for test which constantly sends read requests towards zookeeper. The high level view of this case is given below;
-
-![hZookeeper Case-2](./images/case_2.png)
-
-After the desired amount of stress threads have been launched, test client is stopped and it's stats are fetched. These stats are stored in influxdb which can be visualized on Grafana later.
-In this case, we can visualize how different stress influences the latencies of read/write requests.
 
 ####Case-3:
 In this case, first we run the desired number of stress clients before starting our test client. In this case, we are calculating mean, median and 95th percentile of read/write requests ran for a desired duration. 
