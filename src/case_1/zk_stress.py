@@ -13,10 +13,10 @@ from hydra.lib import util
 from hydra.lib.hdaemon import HDaemonRepSrv
 path.append("hydra/src/main/python")
 
-l = util.createlogger('HWPub', logging.INFO)
+l = util.createlogger('ZKStress', logging.INFO)
 
 
-class ZKstress(HDaemonRepSrv):
+class ZKStress(HDaemonRepSrv):
 
     def __init__(self, port, run_data, zk_server_ip):
         self.run_data = run_data
@@ -25,6 +25,10 @@ class ZKstress(HDaemonRepSrv):
         self.register_fn('startwriter', self.stress_writer)
         self.register_fn('stopstress', self.stress_stop)
         self.register_fn('startreader', self.stress_reader)
+        self.register_fn('no', self.do_nothing)
+
+    def do_nothing(self):
+        return 'ok', 'nothing'
 
     def stress_writer(self):
         self.run_data['test_action'] = 'startwriter'
@@ -53,7 +57,6 @@ class ZKstress(HDaemonRepSrv):
         return 'ok', None
 
     def write(self, j):
-
         l.info("Thread-%s" % j)
         znodes = []
         while True:
@@ -79,30 +82,34 @@ class ZKstress(HDaemonRepSrv):
 
 
 def run(argv):
-    # Use PORT0 (this is the port which Mesos assigns to the applicaiton), as control port. HAnalyzer will send all
-    # signals to this port.
+    """
+    This function would be called when zk_stress app will be launched.
+    :param argv: Function will take publisher_port as argument. A ZMQ publisher socket will be opened with this port.
+    :return:
+    """
+# Use PORT0 (this is the port which Mesos assigns to the applicaiton), as control port. HAnalyzer will send all
+# signals to this port.
     zk_server_ip = argv[1]
-    threads = int(argv[2])
+    list_threads = []
     stress_rep_port = os.environ.get('PORT0')
     run_data = {'test_action': 'waiting',
                 'test_status': 'stopped'}
-
     print ("Starting ZKstress  at port [%s]", stress_rep_port)
-    hd = ZKstress(stress_rep_port, run_data, zk_server_ip)
+    hd = ZKStress(stress_rep_port, run_data, zk_server_ip)
     hd.run()
     j = 1  # initialize thread count
     while True:
         if run_data['test_action'] == 'startwriter':
             l.info("Starting writer stress threads")
             run_data['test_status'] = 'start'
-            for t in range(threads):
+            for t in range(5):
                 r = Thread(target=hd.write, args=(j,))
                 r.start()
                 j += 1
             run_data['test_action'] = 'waiting'
         elif run_data['test_action'] == 'startreader':
             l.info("Starting reader stress threads")
-            for t in range(threads):
+            for t in range(5):
                 w = Thread(target=hd.reader, args=(j,))
                 w.start()
                 j += 1

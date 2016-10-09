@@ -188,6 +188,8 @@ After the desired amount of stress threads have been launched, test client is st
 In this case, we can visualize how different stress influences the latencies of read/write requests.
 
 ####Case-2:
+**This case is still undervdevelopment
+ 
 In the first case, we are running different zookeeper operations and observing their affects on eachother.
 
 We are running number of clients specified
